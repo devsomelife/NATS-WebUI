@@ -44,7 +44,7 @@ impl NatsServer {
             .await?
             .json::<ServerVarz>()
             .await?;
-        // info!("{:?}", varz);
+        info!("{:?}", varz);
         Ok(VarzBroadcastMessage {
             server_id: id,
             varz: varz,
