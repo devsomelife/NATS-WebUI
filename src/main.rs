@@ -308,8 +308,11 @@ async fn handle_client_subscribe_request(
     conn: Connection,
 ) -> Result<impl warp::Reply, warp::Rejection> {
     match sql::get_connection_triple(&conn, client_id) {
-        Ok((hostname, port, mut subjects)) => {
+        Ok((hostname, token, port, mut subjects)) => {
             let addr = format!("{}:{}", hostname, port).parse().unwrap();
+            if !token.is_empty() {
+                addr = format!("{}@{}", token, addr).parse().unwrap();
+            }
             Ok(ws.on_upgrade(|ws| async move {
                 let mut sbjs = Vec::new();
                 while let Some(s) = subjects.pop() {

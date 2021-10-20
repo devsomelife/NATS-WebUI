@@ -23,6 +23,7 @@ pub struct NatsServer {
     pub id: Option<i64>,
     pub name: String,
     pub host: String,
+    pub token: String,
     pub port: u16,
     pub monitoring_port: u16,
     pub varz: Option<ServerVarz>,
@@ -111,17 +112,22 @@ pub struct ServerVarz {
     go: String,
     host: String,
     port: u16,
+    //auth_required: 
     max_connections: u64,
     ping_interval: u64,
     ping_max: u64,
     http_host: String,
     http_port: u16,
+    http_base_path: 
     https_port: u16,
     auth_timeout: u64,
     max_control_line: u64,
     max_payload: u64,
     max_pending: u64,
     cluster: ServerCluster,
+    //gateway: 
+    //leaf: 
+    //jetstream: 
     tls_timeout: f64,
     write_deadline: u64,
     start: String,
@@ -129,6 +135,7 @@ pub struct ServerVarz {
     uptime: String,
     mem: u64,
     cores: u64,
+    //gomaxprocs: 
     cpu: u8,
     connections: u64,
     total_connections: u64,
@@ -141,10 +148,9 @@ pub struct ServerVarz {
     out_bytes: u64,
     slow_consumers: u64,
     subscriptions: u64,
+    //http_req_stats: 
     config_load_time: String,
-    // http_req_stats:
-    // gateway:
-    // leaf:
+    //system_account,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, Eq, PartialEq)]

@@ -61,6 +61,9 @@
         <el-form-item label="Hostname">
           <el-input v-model="createServerForm.host"></el-input>
         </el-form-item>
+        <el-form-item label="Token">
+          <el-input v-model="createServerForm.token"></el-input>
+        </el-form-item>
         <el-form-item label="Message Port">
           <el-input-number :controls="false" v-model="createServerForm.port"></el-input-number>
         </el-form-item>
@@ -90,6 +93,7 @@ export default {
         id: null,
         name: '',
         host: '',
+        token: '',
         port: 0,
         monitoring_port: 0,
         subjects: [],
@@ -114,6 +118,7 @@ export default {
         id: id,
         name: '',
         host: '',
+        token: '',
         port: 4222,
         monitoring_port: 8222,
         subjects: [],

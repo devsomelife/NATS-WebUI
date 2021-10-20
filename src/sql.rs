@@ -17,6 +17,7 @@ pub fn db_setup(conn: &Connection) -> Result<()> {
                 id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                 name	TEXT NOT NULL,
                 host	TEXT NOT NULL,
+                token	TEXT NOT NULL,
                 port	INTEGER NOT NULL,
                 monitoring_port	INTEGER NOT NULL,
                 subjects	TEXT NOT NULL,
@@ -65,8 +66,9 @@ pub fn get_servers(conn: &Connection) -> Result<Vec<NatsServer>> {
                 id: Some(row.get(0)?),
                 name: row.get(1)?,
                 host: row.get(2)?,
-                port: row.get(3)?,
-                monitoring_port: row.get(4)?,
+                token: row.get(3)?,
+                port: row.get(4)?,
+                monitoring_port: row.get(5)?,
                 varz: None,
                 subjects: serde_json::from_str::<Vec<SubjectTreeNode>>(&sbjs)
                     .expect("Failed to parse subject from SQL query as Vec<SubjectTreeNode>"),
@@ -89,8 +91,7 @@ pub fn get_clients(conn: &Connection) -> Result<Vec<NatsClient>> {
                 id: Some(row.get(0)?),
                 name: row.get(1)?,
                 server_id: row.get(2)?,
-                subjects: serde_json::from_str::<Vec<SubjectTreeNode>>(&sbjs)
-                    .expect("Failed to parse subject from SQL query as Vec<SubjectTreeNode>"),
+                subjects: serde_json::from_str::<Vec<SubjectTreeNode>>(&sbjs).expect("Failed to parse subject from SQL query as Vec<SubjectTreeNode>"),
                 info: row.get(4)?,
                 ping: row.get(5)?,
                 pong: row.get(6)?,
@@ -133,10 +134,11 @@ pub fn insert_client(conn: &Connection, client: NatsClient) -> Result<usize> {
 
 pub fn insert_server(conn: &Connection, server: NatsServer) -> Result<usize> {
     Ok(conn.execute(
-        "INSERT INTO servers (name, host, port, monitoring_port, subjects, publications) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+        "INSERT INTO servers (name, host, token, port, monitoring_port, subjects, publications) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
         params![
             server.name,
             server.host,
+            server.token,
             server.port,
             server.monitoring_port,
             serde_json::to_string(&server.subjects).expect("Failed to serialize server subjects as JSON"),
@@ -175,9 +177,7 @@ pub fn update_client(conn: &Connection, client: NatsClient) -> Result<usize> {
             client.unsub,
             client.connect,
             client.msg,
-            client
-                .id
-                .expect("Cannot update client without providing an id.")
+            client.id.expect("Cannot update client without providing an id.")
         ],
     )?)
 }
@@ -187,22 +187,20 @@ pub fn update_server(conn: &Connection, server: NatsServer) -> Result<usize> {
         "UPDATE servers SET \
         name = ?1,\
         host = ?2,\
-        port = ?3,\
-        monitoring_port = ?4,\
-        subjects = ?5,\
-        publications = ?6 WHERE id = ?7",
+        token = ?3,\
+        port = ?4,\
+        monitoring_port = ?5,\
+        subjects = ?6,\
+        publications = ?7 WHERE id = ?8",
         params![
             server.name,
             server.host,
+            server.token,
             server.port,
             server.monitoring_port,
-            serde_json::to_string(&server.subjects)
-                .expect("Failed to serialize server subjects as JSON"),
-            serde_json::to_string(&server.publications)
-                .expect("Failed to serialize server publications as JSON"),
-            server
-                .id
-                .expect("Cannot update server without providing an id.")
+            serde_json::to_string(&server.subjects).expect("Failed to serialize server subjects as JSON"),
+            serde_json::to_string(&server.publications).expect("Failed to serialize server publications as JSON"),
+            server.id.expect("Cannot update server without providing an id.")
         ],
     )?)
 }
@@ -219,13 +217,14 @@ pub fn get_connection_triple(
     conn: &Connection,
     client_id: i64,
 ) -> Result<(String, u16, Vec<SubjectTreeNode>)> {
-    let mut ps = conn.prepare("SELECT servers.host, servers.port, clients.subjects FROM clients INNER JOIN servers ON clients.server_id=servers.id WHERE clients.id = ?1")?;
+    let mut ps = conn.prepare("SELECT servers.host, servers.token, servers.port, clients.subjects FROM clients INNER JOIN servers ON clients.server_id=servers.id WHERE clients.id = ?1")?;
     let rs = ps
         .query_map(params![client_id], |row| {
-            let sbjs: String = row.get(2)?;
+            let sbjs: String = row.get(3)?;
             Ok((
                 row.get::<usize, String>(0)?,
-                row.get::<usize, u16>(1)?,
+                row.get::<usize, String>(1)?,
+                row.get::<usize, u16>(2)?,
                 serde_json::from_str::<Vec<SubjectTreeNode>>(&sbjs)
                     .expect("Failed to parse subject from SQL query as Vec<SubjectTreeNode>"),
             ))
@@ -264,6 +263,7 @@ mod test {
             id: None,
             name: String::from("test_server"),
             host: String::from("test_host.com"),
+            token: String::from(""),
             port: 4222,
             monitoring_port: 8222,
             varz: None,
