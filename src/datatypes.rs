@@ -1,6 +1,7 @@
 use rants::{Subject, SubjectBuilder};
 use reqwest;
 use serde::{Deserialize, Serialize};
+use log::info;
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug)]
 pub struct App {
