@@ -26,7 +26,8 @@ pub struct NatsServer {
     pub token: String,
     pub port: u16,
     pub monitoring_port: u16,
-    pub varz: Option<ServerVarz>,
+    //pub varz: Option<ServerVarz>,
+    pub varz: Option<serde_json::Value>,
     pub subjects: Vec<SubjectTreeNode>,
     pub publications: Vec<Publication>,
 }
@@ -44,8 +45,8 @@ impl NatsServer {
             .get(&addr)
             .send()
             .await?
-            .json()
             //.json::<ServerVarz>()
+            .json()
             .await?;
         //println!("{:?}", varz);
         Ok(VarzBroadcastMessage {
@@ -58,8 +59,8 @@ impl NatsServer {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VarzBroadcastMessage {
     server_id: i64,
-    varz: serde_json::Value,
     //varz: ServerVarz,
+    varz: serde_json::Value,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, Eq, PartialEq)]
