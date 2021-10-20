@@ -1,7 +1,7 @@
 use rants::{Subject, SubjectBuilder};
 use reqwest;
 use serde::{Deserialize, Serialize};
-//use log::info;
+use log::{error};
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug)]
 pub struct App {
@@ -44,8 +44,16 @@ impl NatsServer {
         let varz = client
             .get(&addr)
             .send()
+            {
+                Ok(v) => v,
+                Err(e) => error!("Error in get server {:?} varz: {:?}", addr, e)
+            }
             .await?
             .json::<ServerVarz>()
+            {
+                Ok(v) => v,
+                Err(e) => error!("Error in get server {:?} varz to json: {:?}", addr, e)
+            }
             .await?;
         println!("{:?}", varz);
         Ok(VarzBroadcastMessage {
