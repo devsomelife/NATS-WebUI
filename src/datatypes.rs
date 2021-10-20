@@ -39,7 +39,7 @@ impl NatsServer {
         client: &reqwest::Client,
     ) -> reqwest::Result<VarzBroadcastMessage> {
         let addr = format!("http://{}:{}/varz", host, port);
-        println!("{:?}",addr);
+        //println!("{:?}",addr);
         let varz = client
             .get(&addr)
             .send()
@@ -47,7 +47,7 @@ impl NatsServer {
             .json()
             //.json::<ServerVarz>()
             .await?;
-        println!("{:?}", varz);
+        //println!("{:?}", varz);
         Ok(VarzBroadcastMessage {
             server_id: id,
             varz: varz,
