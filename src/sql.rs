@@ -60,8 +60,8 @@ pub fn get_servers(conn: &Connection) -> Result<Vec<NatsServer>> {
     let mut ps = conn.prepare("SELECT * FROM servers")?;
     let rs = ps
         .query_map(params![], |row| {
-            let sbjs: String = row.get(5)?;
-            let pubs: String = row.get(6)?;
+            let sbjs: String = row.get(6)?;
+            let pubs: String = row.get(7)?;
             Ok(NatsServer {
                 id: Some(row.get(0)?),
                 name: row.get(1)?,
