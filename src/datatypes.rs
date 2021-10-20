@@ -1,7 +1,7 @@
 use rants::{Subject, SubjectBuilder};
 use reqwest;
 use serde::{Deserialize, Serialize};
-use log::info;
+//use log::info;
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug)]
 pub struct App {
@@ -39,13 +39,15 @@ impl NatsServer {
         port: u16,
         client: &reqwest::Client,
     ) -> reqwest::Result<VarzBroadcastMessage> {
+        let addr = format!("http://{}:{}/varz", host, port);
+        println!("{:?}",addr);
         let varz = client
-            .get(&format!("http://{}:{}/varz", host, port))
+            .get(&addr)
             .send()
             .await?
             .json::<ServerVarz>()
             .await?;
-        info!("{:?}", varz);
+        println!("{:?}", varz);
         Ok(VarzBroadcastMessage {
             server_id: id,
             varz: varz,
