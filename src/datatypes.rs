@@ -118,7 +118,7 @@ pub struct ServerVarz {
     ping_max: u64,
     http_host: String,
     http_port: u16,
-    http_base_path: 
+    // http_base_path: 
     https_port: u16,
     auth_timeout: u64,
     max_control_line: u64,

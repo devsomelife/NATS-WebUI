@@ -216,7 +216,7 @@ pub fn delete_server(conn: &Connection, server_id: i64) -> Result<usize> {
 pub fn get_connection_triple(
     conn: &Connection,
     client_id: i64,
-) -> Result<(String, u16, Vec<SubjectTreeNode>)> {
+) -> Result<(String, String, u16, Vec<SubjectTreeNode>)> {
     let mut ps = conn.prepare("SELECT servers.host, servers.token, servers.port, clients.subjects FROM clients INNER JOIN servers ON clients.server_id=servers.id WHERE clients.id = ?1")?;
     let rs = ps
         .query_map(params![client_id], |row| {
