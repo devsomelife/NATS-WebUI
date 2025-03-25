@@ -41,14 +41,21 @@
           <el-table-column prop="timestamp" label="Timestamp" width="160"></el-table-column>
           <el-table-column prop="typ" label="Type" width="60"></el-table-column>
           <el-table-column prop="subject" label="Subject" width="240" resizable></el-table-column>
-          <el-table-column prop="message" label="Message" resizable></el-table-column>
+          <el-table-column prop="message" label="Message" resizable>
+            <template slot-scope="scope">
+              <div style="cursor: pointer; width: 100%; height: 100%" @click="copyToClipboard(scope.row.message)">
+                {{ scope.row.message }}
+              </div>
+            </template>
+
+          </el-table-column>
         </el-table>
       </el-main>
     </el-container>
     <el-aside style="border-left: 1px solid #e6e6e6; flex: 1 0 120px; padding: 12px;">
       <h1 style="text-align: left; font-size: 1em; margin: 8px 0px;">Server Subject Hierarchy</h1>
       <el-tree ref="tree" :data="server.subjects" empty-text="No subjects configured for this server." default-expand-all node-key="id"
-        :props="{label: 'subject_str', children: 'subjects', disabled: false, isLeaf: checkIsLeaf}" 
+               :props="{label: 'subject_str', children: 'subjects', disabled: false, isLeaf: checkIsLeaf}"
         show-checkbox @check="handleCheckChange" :default-checked-keys="checkedKeys" check-strictly>
       </el-tree>
     </el-aside>
@@ -56,7 +63,7 @@
 </template>
 
 <script>
-import { mapState, mapActions, mapMutations } from 'vuex'
+import {mapActions, mapMutations, mapState} from 'vuex'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import moment from 'moment'
 
@@ -174,6 +181,26 @@ export default {
     async handleFilterCheckChange() {
       let client = JSON.parse(JSON.stringify(this.client))
       await this.updateClient(client)
+    },
+    copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        // Optional: Show success message using Element UI
+        this.$message({
+          message: 'Text copied to clipboard',
+          type: 'success',
+          duration: 2000
+        });
+      })
+          .catch(err => {
+            // Optional: Show error message using Element UI
+            this.$message({
+              message: 'Failed to copy text: ' + err,
+              type: 'error',
+              duration: 2000
+            });
+          });
+
+
     }
   },
   mounted () {
@@ -188,7 +215,7 @@ export default {
               updated.slice(updated.length - 100);
             }
             this.client.messages = updated
-            
+
           }
           this.client.messageBuffer.clear()
         }
@@ -215,6 +242,9 @@ export default {
   line-height: 12px;
   vertical-align: top;
   font-family: 'Roboto Mono', monospace;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 #message-log td {
